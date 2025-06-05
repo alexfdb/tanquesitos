@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<title> Mapa 1</title>
+<style>
+    body {
+        background-color: black;
+    }
+
+    canvas {
+        border: 4px solid #fff;
+        margin: 0 auto;
+        display: block;
+    }   
+</style>
+<canvas></canvas>
+<script>
+    const canvas = document.querySelector('canvas')
+    const ctx = canvas.getContext('2d')
+
+    canvas.width = 800
+    canvas.height = 650
+    
+    let counter = 0
+
+    const balaRadio = 3;
+
+    let x = canvas.width / 2
+    let y = canvas.height - 30
+
+    let x1 = canvas.width / 2
+    let y1 = canvas.height - 30
+
+    let dx = -10
+    let dy = -10
+
+    let dx1 = +4
+    let dy1 = +4
+
+    function dibujoBala1() {
+        ctx.beginPath()
+        ctx.arc(x,y, balaRadio, 0, Math.PI * 2)
+        ctx.fillStyle = '#fff'
+        ctx.fill()
+        ctx.closePath()
+    }
+    function dibujoBala2() {
+        ctx.beginPath()
+        ctx.arc(x1,y1, balaRadio, 0, Math.PI * 2)
+        ctx.fillStyle = '#fff'
+        ctx.fill()
+        ctx.closePath()
+    }
+    function drawTank1() {}
+    function drawTank2() {}
+
+    function deectarColision(){}
+    function movimientoBala1(){
+        if(x + dx > canvas.width - balaRadio||
+        x + dx < balaRadio){
+            dx = -dx
+        }
+        if(y + dy > canvas.height - balaRadio||
+        y + dy < balaRadio){
+            dy = -dy
+        }
+        x +=dx
+        y +=dy
+    }
+    function movimientoBala2(){
+        if(x1 + dx1 > canvas.width - balaRadio||
+        x1 + dx1 < balaRadio){
+            dx1 = -dx1
+        }
+        if(y1 + dy1 > canvas.height - balaRadio||
+        y1 + dy1 < balaRadio){
+            dy1 = -dy1
+        }
+        x1 +=dx1
+        y1 +=dy1
+    }
+    function movimientoTank1(){}
+    function movimientoTank2(){}
+
+    function refrescar(){
+        ctx.clearRect(0,0,canvas.width, canvas.height)
+    }
+    function draw(){
+        refrescar()
+        dibujoBala1()
+        dibujoBala2()
+        drawTank1()
+        drawTank2()
+
+        deectarColision()
+        movimientoBala1()
+        movimientoBala2()
+        movimientoTank1()
+        movimientoTank2()
+
+        window.requestAnimationFrame(draw)
+    }
+
+    draw()
+</script>
+</html>
