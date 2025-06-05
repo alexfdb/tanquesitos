@@ -9,7 +9,7 @@
         border: 4px solid #fff;
         margin: 0 auto;
         display: block;
-    }   
+    }
 </style>
 <canvas></canvas>
 <script>
@@ -18,79 +18,139 @@
 
     canvas.width = 800
     canvas.height = 650
-    
+
     let counter = 0
+
+    const tankHeight1 = 15
+    const tankWidth1 = 15
+
+    let tankX1 = (canvas.width - tankWidth1) / 2
+    let tanky1 = canvas.height - tankHeight1 - 250
+
+    function drawTank1() {
+        ctx.fillStyle = 'red'
+        ctx.fillRect(
+            tankX1,
+            tanky1,
+            tankWidth1,
+            tankHeight1
+        )
+    }
+
+    const tankHeight2 = 15
+    const tankWidth2 = 15
+
+    let tankX2 = (canvas.width - tankWidth2) / 8
+    let tanky2 = canvas.height - tankHeight2 - 60
+
+    function drawTank2() { 
+        ctx.fillStyle = 'red'
+        ctx.fillRect(
+            tankX2,
+            tanky2,
+            tankWidth2,
+            tankHeight2
+        )
+    }
 
     const balaRadio = 3;
 
-    let x = canvas.width / 2
-    let y = canvas.height - 30
+    
 
-    let x1 = canvas.width / 2
-    let y1 = canvas.height - 30
+    let x1 = tankX1
+    let y1 = tanky1
 
-    let dx = -10
-    let dy = -10
+    let x2 = tankX2
+    let y2 = tanky2
 
-    let dx1 = +4
-    let dy1 = +4
+    let dx1 = -4
+    let dy1 = -4
+
+    let dx2 = +4
+    let dy2 = +4
 
     function dibujoBala1() {
         ctx.beginPath()
-        ctx.arc(x,y, balaRadio, 0, Math.PI * 2)
+        ctx.arc(x1, y1, balaRadio, 0, Math.PI * 2)
         ctx.fillStyle = '#fff'
         ctx.fill()
         ctx.closePath()
     }
     function dibujoBala2() {
         ctx.beginPath()
-        ctx.arc(x1,y1, balaRadio, 0, Math.PI * 2)
+        ctx.arc(x2, y2, balaRadio, 0, Math.PI * 2)
         ctx.fillStyle = '#fff'
         ctx.fill()
         ctx.closePath()
     }
-    function drawTank1() {}
-    function drawTank2() {}
 
-    function deectarColision(){}
-    function movimientoBala1(){
-        if(x + dx > canvas.width - balaRadio||
-        x + dx < balaRadio){
-            dx = -dx
-        }
-        if(y + dy > canvas.height - balaRadio||
-        y + dy < balaRadio){
-            dy = -dy
-        }
-        x +=dx
-        y +=dy
-    }
-    function movimientoBala2(){
-        if(x1 + dx1 > canvas.width - balaRadio||
-        x1 + dx1 < balaRadio){
+    function detectarColision() { }
+    function movimientoBala1() {
+        if (x1 + dx1 > canvas.width - balaRadio ||
+            x1 + dx1 < balaRadio) {
             dx1 = -dx1
         }
-        if(y1 + dy1 > canvas.height - balaRadio||
-        y1 + dy1 < balaRadio){
+        if (y1 + dy1 > canvas.height - balaRadio ||
+            y1 + dy1 < balaRadio) {
             dy1 = -dy1
         }
-        x1 +=dx1
-        y1 +=dy1
+        x1 += dx1
+        y1 += dy1
     }
-    function movimientoTank1(){}
-    function movimientoTank2(){}
+    function movimientoBala2() {
+        if (x2 + dx2 > canvas.width - balaRadio ||
+            x2 + dx2 < balaRadio) {
+            dx2 = -dx2
+        }
+        if (y2 + dy2 > canvas.height - balaRadio ||
+            y2 + dy2 < balaRadio) {
+            dy2 = -dy2
+        }
+        x2 += dx2
+        y2 += dy2
+    }
+    function movimientoTank1() { }
+    function movimientoTank2() { }
 
-    function refrescar(){
-        ctx.clearRect(0,0,canvas.width, canvas.height)
+    let derechaPresionada = false
+    let izquierdaPresionada = false
+
+    function initEvents(){
+        document.addEventListener('keydown', activarTecla)
+        document.addEventListener('keyup', desactivarTecla)
+    
+        function activarTecla(event){
+            const { Key } = event
+            if( Key === 'Right' || Key === 'ArrowRight'){
+                derechaPresionada = true
+            } else if( Key === 'Left' || Key === 'ArrowLeft'){
+                izquierdaPresionada = true
+            } 
+        }
+
+        function desactivarTecla(event){
+            const { Key } = event
+            if( Key === 'Right' || Key === 'ArrowRight'){
+                derechaPresionada = false
+            } else if( Key === 'Left' || Key === 'ArrowLeft'){
+                izquierdaPresionada = false
+            } 
+        }
     }
-    function draw(){
+
+    function refrescar() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+    }
+
+    function draw() {
+        console.log({derechaPresionada, izquierdaPresionada})
         refrescar()
         dibujoBala1()
         dibujoBala2()
         drawTank1()
         drawTank2()
 
-        deectarColision()
+        detectarColision()
         movimientoBala1()
         movimientoBala2()
         movimientoTank1()
@@ -100,5 +160,7 @@
     }
 
     draw()
+    initEvents()
 </script>
+
 </html>
