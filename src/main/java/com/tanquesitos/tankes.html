@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Juego de Tanques 2 Jugadores</title>
+  <style>
+    canvas {
+      background: #222;
+      display: block;
+      margin: 0 auto;
+      border: 4px solid #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="game" width="800" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const keys = {};
+    document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+    document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+
+    const walls = [
+      //bloque
+      { x: 300, y: 200, width: 200, height: 200 },
+      { x: 350, y: 90, width: 100, height: 30 },
+      { x: 350, y: 490, width: 100, height: 30 },
+      //esquinas
+      { x: 100, y: 130, width: 100, height: 20 },
+      { x: 180, y: 50, width: 20, height: 100 },
+      { x: 600, y: 130, width: 100, height: 20 },
+      { x: 600, y: 50, width: 20, height: 100 },
+      { x: 100, y: 450, width: 100, height: 20 },
+      { x: 180, y: 450, width: 20, height: 100 },
+      { x: 600, y: 450, width: 100, height: 20 },
+      { x: 600, y: 450, width: 20, height: 100 },
+
+    ];
+
+    function createTank(x, y, color, controls) {
+      return {
+        x, y,
+        angle: 0,
+        speed: 0,
+        color,
+        controls,
+        cooldown: 0
+      };
+    }
+
+    function createBullet(x, y, angle, owner) {
+      return {
+        x, y,
+        angle,
+        speed: 3,
+        owner,
+        createdAt: Date.now()
+      };
+    }
+
+    let bullets = [];
+
+    const tank1 = createTank(100, 300, "red", {
+      left: "a", right: "d", forward: "w", backward: "s", shoot: "q"
+    });
+    const tank2 = createTank(700, 300, "blue", {
+      left: "arrowleft", right: "arrowright", forward: "arrowup", backward: "arrowdown", shoot: "m"
+    });
+
+    const tanks = [tank1, tank2];
+
+    function rectsCollide(a, b) {
+      return a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y;
+    }
+
+    function tankHitBox(tank) {
+      return {
+        x: tank.x - 15,
+        y: tank.y - 15,
+        width: 30,
+        height: 30
+      };
+    }
+
+    function drawTank(tank) {
+      ctx.save();
+      ctx.translate(tank.x, tank.y);
+      ctx.rotate(tank.angle);
+      ctx.fillStyle = tank.color;
+      ctx.fillRect(-15, -15, 30, 30);
+      ctx.fillStyle = "black";
+      ctx.fillRect(10, -5, 15, 10);
+      ctx.restore();
+    }
+
+    function drawBullet(bullet) {
+      ctx.beginPath();
+      ctx.arc(bullet.x, bullet.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "white";
+      ctx.fill();
+    }
+
+    function drawWalls() {
+      ctx.fillStyle = "gray";
+      walls.forEach(wall => {
+        ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+      });
+    }
+
+    let gameOver = false;
+
+    function resetGame(winner) {
+      gameOver = true;
+      setTimeout(() => {
+        alert(`${winner} ha ganado! Reiniciando...`);
+        tank1.x = 100; tank1.y = 300; tank1.angle = 0;
+        tank2.x = 700; tank2.y = 300; tank2.angle = Math.PI;
+        bullets = [];
+        gameOver = false;
+      }, 200);
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawWalls();
+
+      const now = Date.now();
+
+      tanks.forEach(tank => {
+        if (gameOver) return;
+
+        if (keys[tank.controls.left]) tank.angle -= 0.02;
+        if (keys[tank.controls.right]) tank.angle += 0.02;
+        if (keys[tank.controls.forward]) {
+          tank.x += Math.cos(tank.angle) * 1;
+          tank.y += Math.sin(tank.angle) * 1;
+        }
+        if (keys[tank.controls.backward]) {
+          tank.x -= Math.cos(tank.angle) * 1;
+          tank.y -= Math.sin(tank.angle) * 1;
+        }
+
+        if (keys[tank.controls.shoot] && tank.cooldown <= 0) {
+          const bulletOffset = 10; 
+          const bulletX = tank.x + Math.cos(tank.angle) * bulletOffset;
+          const bulletY = tank.y + Math.sin(tank.angle) * bulletOffset;
+
+
+          const bulletRect = { x: bulletX - 5, y: bulletY - 5, width: 10, height: 10 };
+          const collidesWithWall = walls.some(wall => rectsCollide(bulletRect, wall));
+
+          if (!collidesWithWall) {
+            bullets.push(createBullet(bulletX, bulletY, tank.angle, tank));
+            tank.cooldown = 75;
+          }
+          tank.cooldown = 75;
+        }
+        tank.cooldown--;
+
+        // Colisión con bordes
+        tank.x = Math.max(15, Math.min(canvas.width - 15, tank.x));
+        tank.y = Math.max(15, Math.min(canvas.height - 15, tank.y));
+
+        // Colisión con muros
+        const box = tankHitBox(tank);
+        for (const wall of walls) {
+          if (rectsCollide(box, wall)) {
+            tank.x -= Math.cos(tank.angle) * 2;
+            tank.y -= Math.sin(tank.angle) * 2;
+          }
+        }
+
+        drawTank(tank);
+      });
+
+      bullets = bullets.filter(bullet => now - bullet.createdAt < 1000);
+
+      bullets.forEach(bullet => {
+        if (gameOver) return;
+
+        bullet.x += Math.cos(bullet.angle) * bullet.speed;
+        bullet.y += Math.sin(bullet.angle) * bullet.speed;
+
+        // Rebote en bordes
+        if (bullet.x <= 5 || bullet.x >= canvas.width - 5) {
+          bullet.angle = Math.PI - bullet.angle;
+        }
+        if (bullet.y <= 5 || bullet.y >= canvas.height - 5) {
+          bullet.angle = -bullet.angle;
+        }
+
+        // Rebote en muros
+        for (const wall of walls) {
+          const rect = { x: bullet.x - 5, y: bullet.y - 5, width: 10, height: 10 };
+          if (rectsCollide(rect, wall)) {
+            // Detectar de qué lado viene la bala
+            const prevX = bullet.x - Math.cos(bullet.angle) * bullet.speed;
+            const prevY = bullet.y - Math.sin(bullet.angle) * bullet.speed;
+
+            // Revisar de qué dirección venía
+            const fromLeft = prevX + 5 <= wall.x;
+            const fromRight = prevX - 5 >= wall.x + wall.width;
+            const fromTop = prevY + 5 <= wall.y;
+            const fromBottom = prevY - 5 >= wall.y + wall.height;
+
+            // Rebote más preciso
+            if (fromLeft || fromRight) {
+              bullet.angle = Math.PI - bullet.angle;
+            } else if (fromTop || fromBottom) {
+              bullet.angle = -bullet.angle;
+            } else {
+              // Rebote diagonal o esquinas, invertir completamente
+              bullet.angle += Math.PI;
+            }
+
+            // Evita quedarte pegado
+            bullet.x += Math.cos(bullet.angle) * bullet.speed;
+            bullet.y += Math.sin(bullet.angle) * bullet.speed;
+          }
+        }
+
+        drawBullet(bullet);
+
+        // Colisión con tanques
+        tanks.forEach(tank => {
+          if (tank !== bullet.owner) {
+            const dist = Math.hypot(bullet.x - tank.x, bullet.y - tank.y);
+            if (dist < 15) {
+              resetGame(bullet.owner.color.toUpperCase());
+            }
+          }
+        });
+      });
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+
+</html>
