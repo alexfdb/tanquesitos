@@ -105,8 +105,8 @@
 
     function initGame() {
 
-      function createTank(x, y, color, controls) {
-        return { x, y, angle: 0, speed: 2, color, controls, cooldown: 0, image: tankImages[color] || null};
+      function createTank(x, y, color, controls, angulo) {
+        return { x, y, angle: angulo, speed: 2, color, controls, cooldown: 0, image: tankImages[color] || null};
       }
 
       function createBullet(x, y, angle, owner) {
@@ -117,10 +117,10 @@
 
       const tank1 = createTank(100, 300, "red", {
         left: "a", right: "d", forward: "w", backward: "s", shoot: "q"
-      });
+      },0);
       const tank2 = createTank(700, 300, "blue", {
         left: "arrowleft", right: "arrowright", forward: "arrowup", backward: "arrowdown", shoot: "m"
-      });
+      },59.7);
 
       const tanks = [tank1, tank2];
 
