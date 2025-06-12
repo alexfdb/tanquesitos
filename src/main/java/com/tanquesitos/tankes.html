@@ -91,11 +91,11 @@
     function initGame() {
 
       function createTank(x, y, color, controls) {
-        return { x, y, angle: 0, speed: 0, color, controls, cooldown: 0 };
+        return { x, y, angle: 0, speed: 2, color, controls, cooldown: 0 };
       }
 
       function createBullet(x, y, angle, owner) {
-        return { x, y, angle, speed: 3, owner, createdAt: Date.now() };
+        return { x, y, angle, speed: 6, owner, createdAt: Date.now() };
       }
 
       let bullets = [];
@@ -166,12 +166,12 @@
         tanks.forEach(tank => {
           if (gameOver) return;
 
-          if (keys[tank.controls.left]) tank.angle -= 0.02;
-          if (keys[tank.controls.right]) tank.angle += 0.02;
+          if (keys[tank.controls.left]) tank.angle -= 0.05;
+          if (keys[tank.controls.right]) tank.angle += 0.05;
           // Movimiento hacia adelante
           if (keys[tank.controls.forward]) {
-            const dx = Math.cos(tank.angle);
-            const dy = Math.sin(tank.angle);
+            const dx = Math.cos(tank.angle) * tank.speed;
+            const dy = Math.sin(tank.angle) * tank.speed;
             const nextX = tank.x + dx;
             const nextY = tank.y + dy;
             const nextBox = { x: nextX - 15, y: nextY - 15, width: 30, height: 30 };
@@ -185,8 +185,8 @@
 
           // Movimiento hacia atrás
           if (keys[tank.controls.backward]) {
-            const dx = -Math.cos(tank.angle);
-            const dy = -Math.sin(tank.angle);
+            const dx = -Math.cos(tank.angle) * tank.speed;
+            const dy = -Math.sin(tank.angle) * tank.speed;
             const nextX = tank.x + dx;
             const nextY = tank.y + dy;
             const nextBox = { x: nextX - 15, y: nextY - 15, width: 30, height: 30 };
