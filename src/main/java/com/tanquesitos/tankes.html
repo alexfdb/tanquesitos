@@ -88,10 +88,25 @@
       initGame();
     }
 
+    const tankImages = {
+      red: new Image(),
+      blue: new Image()
+    };
+    tankImages.red.src="tanque1.png";
+    tankImages.blue.src="tanque2.png";
+
+    /**
+     * En caso de que la imagen falle
+     */
+    tankImages.red.onerror = () =>
+    {tankImages.red = null;};
+    tankImages.blue.onerror = () =>
+    {tankImages.blue = null;};
+
     function initGame() {
 
       function createTank(x, y, color, controls) {
-        return { x, y, angle: 0, speed: 2, color, controls, cooldown: 0 };
+        return { x, y, angle: 0, speed: 2, color, controls, cooldown: 0, image: tankImages[color] || null};
       }
 
       function createBullet(x, y, angle, owner) {
@@ -127,7 +142,11 @@
         ctx.fillStyle = tank.color;
         ctx.fillRect(-15, -15, 30, 30);
         ctx.fillStyle = "black";
-        ctx.fillRect(10, -5, 15, 10);
+        ctx.fillRect(10, 0, 15, 2);
+
+        if(tank.image && tank.image.complete){
+          ctx.drawImage(tank.image, -15, -20, 40, 40)
+        }
         ctx.restore();
       }
 
