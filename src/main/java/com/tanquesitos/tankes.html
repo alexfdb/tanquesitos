@@ -95,7 +95,7 @@
       }
 
       function createBullet(x, y, angle, owner) {
-        return { x, y, angle, speed: 6, owner, createdAt: Date.now() };
+        return { x, y, angle, speed: 6, owner, color: owner.color, createdAt: Date.now() };
       }
 
       let bullets = [];
@@ -134,7 +134,7 @@
       function drawBullet(bullet) {
         ctx.beginPath();
         ctx.arc(bullet.x, bullet.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
+        ctx.fillStyle = bullet.color;
         ctx.fill();
       }
 
