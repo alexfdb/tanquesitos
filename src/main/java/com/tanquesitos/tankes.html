@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Tankesitos</title>
   <style>
     body {
@@ -31,7 +30,6 @@
     }
   </style>
 </head>
-
 <body>
   <div id="menu">
     <h1>Tankesitos</h1>
@@ -46,13 +44,28 @@
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
+   
+    const wallImage = new Image();
+    wallImage.src = "muro.png"; 
+
+    let wallPattern = null; 
+    wallImage.onload = () => {
+      const tileSize = 50; 
+      const auxCanvas = document.createElement("canvas");
+      auxCanvas.width = tileSize;
+      auxCanvas.height = tileSize;
+      const auxCtx = auxCanvas.getContext("2d");
+      auxCtx.drawImage(wallImage, 0, 0, tileSize, tileSize);
+      wallPattern = ctx.createPattern(auxCanvas, "repeat");
+    };
+
     const keys = {};
     let gameLoopId;
 
     document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
     document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
-    let walls = []; 
+    let walls = [];
 
     const maps = {
       1: [
@@ -92,23 +105,16 @@
       red: new Image(),
       blue: new Image()
     };
-    tankImages.red.src="tanque1.png";
-    tankImages.blue.src="tanque2.png";
+    tankImages.red.src = "tanque1.png";
+    tankImages.blue.src = "tanque2.png";
 
-    /**
-     * En caso de que la imagen falle
-     */
-    tankImages.red.onerror = () =>
-    {tankImages.red = null;};
-    tankImages.blue.onerror = () =>
-    {tankImages.blue = null;};
+    tankImages.red.onerror = () => { tankImages.red = null; };
+    tankImages.blue.onerror = () => { tankImages.blue = null; };
 
     function initGame() {
-
       function createTank(x, y, color, controls, angulo) {
-        return { x, y, angle: angulo, speed: 2, color, controls, cooldown: 0, image: tankImages[color] || null};
+        return { x, y, angle: angulo, speed: 2, color, controls, cooldown: 0, image: tankImages[color] || null };
       }
-
       function createBullet(x, y, angle, owner) {
         return { x, y, angle, speed: 6, owner, color: owner.color, createdAt: Date.now() };
       }
@@ -117,10 +123,10 @@
 
       const tank1 = createTank(100, 300, "red", {
         left: "a", right: "d", forward: "w", backward: "s", shoot: "q"
-      },0);
+      }, 0);
       const tank2 = createTank(700, 300, "blue", {
         left: "arrowleft", right: "arrowright", forward: "arrowup", backward: "arrowdown", shoot: "m"
-      },59.7);
+      }, 59.7);
 
       const tanks = [tank1, tank2];
 
@@ -143,9 +149,8 @@
         ctx.fillRect(-15, -15, 30, 30);
         ctx.fillStyle = "black";
         ctx.fillRect(10, 0, 15, 2);
-
-        if(tank.image && tank.image.complete){
-          ctx.drawImage(tank.image, -15, -20, 40, 40)
+        if (tank.image && tank.image.complete) {
+          ctx.drawImage(tank.image, -15, -20, 40, 40);
         }
         ctx.restore();
       }
@@ -158,9 +163,17 @@
       }
 
       function drawWalls() {
-        ctx.fillStyle = "gray";
+        if (wallPattern) {
+          ctx.fillStyle = wallPattern;
+        } else {
+          ctx.fillStyle = "grey";
+        }
         walls.forEach(wall => {
           ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+          if (!wallPattern) {
+            ctx.strokeStyle = "black";
+            ctx.strokeRect(wall.x, wall.y, wall.width, wall.height);
+          }
         });
       }
 
@@ -187,14 +200,13 @@
 
           if (keys[tank.controls.left]) tank.angle -= 0.05;
           if (keys[tank.controls.right]) tank.angle += 0.05;
-          // Movimiento hacia adelante
+
           if (keys[tank.controls.forward]) {
             const dx = Math.cos(tank.angle) * tank.speed;
             const dy = Math.sin(tank.angle) * tank.speed;
             const nextX = tank.x + dx;
             const nextY = tank.y + dy;
             const nextBox = { x: nextX - 15, y: nextY - 15, width: 30, height: 30 };
-
             const collision = walls.some(w => rectsCollide(nextBox, w));
             if (!collision) {
               tank.x = nextX;
@@ -202,14 +214,12 @@
             }
           }
 
-          // Movimiento hacia atrás
           if (keys[tank.controls.backward]) {
             const dx = -Math.cos(tank.angle) * tank.speed;
             const dy = -Math.sin(tank.angle) * tank.speed;
             const nextX = tank.x + dx;
             const nextY = tank.y + dy;
             const nextBox = { x: nextX - 15, y: nextY - 15, width: 30, height: 30 };
-
             const collision = walls.some(w => rectsCollide(nextBox, w));
             if (!collision) {
               tank.x = nextX;
@@ -221,10 +231,8 @@
             const offset = 10;
             const bx = tank.x + Math.cos(tank.angle) * offset;
             const by = tank.y + Math.sin(tank.angle) * offset;
-
             const bulletRect = { x: bx - 5, y: by - 5, width: 10, height: 10 };
             const hitsWall = walls.some(w => rectsCollide(bulletRect, w));
-
             if (!hitsWall) {
               bullets.push(createBullet(bx, by, tank.angle, tank));
               tank.cooldown = 75;
@@ -250,7 +258,6 @@
 
         bullets.forEach(bullet => {
           if (gameOver) return;
-
           bullet.x += Math.cos(bullet.angle) * bullet.speed;
           bullet.y += Math.sin(bullet.angle) * bullet.speed;
 
@@ -266,16 +273,13 @@
             if (rectsCollide(rect, wall)) {
               const prevX = bullet.x - Math.cos(bullet.angle) * bullet.speed;
               const prevY = bullet.y - Math.sin(bullet.angle) * bullet.speed;
-
               const fromLeft = prevX + 5 <= wall.x;
               const fromRight = prevX - 5 >= wall.x + wall.width;
               const fromTop = prevY + 5 <= wall.y;
               const fromBottom = prevY - 5 >= wall.y + wall.height;
-
               if (fromLeft || fromRight) bullet.angle = Math.PI - bullet.angle;
               else if (fromTop || fromBottom) bullet.angle = -bullet.angle;
               else bullet.angle += Math.PI;
-
               bullet.x += Math.cos(bullet.angle) * bullet.speed;
               bullet.y += Math.sin(bullet.angle) * bullet.speed;
             }
@@ -298,5 +302,4 @@
     }
   </script>
 </body>
-
 </html>
